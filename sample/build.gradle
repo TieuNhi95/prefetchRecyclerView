@@ -32,6 +32,10 @@ android {
         jvmTarget = "1.8"
     }
 
+    buildFeatures {
+        dataBinding = true
+    }
+
     variantFilter {
         if (name == "release") ignore = true
     }

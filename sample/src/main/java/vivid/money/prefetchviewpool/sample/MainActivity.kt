@@ -3,6 +3,7 @@ package vivid.money.prefetchviewpool.sample
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import vivid.money.prefetchviewpool.core.bindToLifecycle
 import vivid.money.prefetchviewpool.coroutines.setupWithPrefetchViewPool
+import vivid.money.prefetchviewpool.sample.databinding.ItemTvBinding
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,6 +46,8 @@ class MainActivity : AppCompatActivity() {
 
 class Adapter : ListAdapter<Any, RecyclerView.ViewHolder>(InvalidateUtilCallback()) {
 
+    var countHolder = 0
+
     override fun getItemViewType(position: Int): Int = when (currentList[position]) {
         is Unit -> 0
         else -> 1
@@ -55,9 +59,17 @@ class Adapter : ListAdapter<Any, RecyclerView.ViewHolder>(InvalidateUtilCallback
             object : RecyclerView.ViewHolder(progressView) {}
         }
         1 -> {
-            Thread.sleep(20)
-            val textView = parent.inflate(R.layout.item_tv)
-            object : RecyclerView.ViewHolder(textView) {}
+            countHolder ++
+            Log.d("CountHolder", "onCreateViewHolder: $countHolder")
+            val view = ItemTvBinding.inflate(
+                LayoutInflater.from(parent.context),
+                parent,
+                false
+            )
+            DemoViewHolder(view.root)
+
+//            val textView = parent.inflate(R.layout.item_tv)
+//            object : RecyclerView.ViewHolder(textView) {}
         }
         else -> error("error")
     }
@@ -67,8 +79,17 @@ class Adapter : ListAdapter<Any, RecyclerView.ViewHolder>(InvalidateUtilCallback
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder.itemViewType == 1) {
-            (holder.itemView as TextView).text = currentList[position] as String
+        if (holder is DemoViewHolder) {
+            holder.bindData(getItem(position).toString())
+        }
+    }
+}
+
+class DemoViewHolder(private val view: View) : RecyclerView.ViewHolder(view){
+
+    fun bindData(content: String){
+        if (view is TextView){
+            view.text = content
         }
     }
 }
